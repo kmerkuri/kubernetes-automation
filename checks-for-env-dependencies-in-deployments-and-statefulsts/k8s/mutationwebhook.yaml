@@ -1,0 +1,22 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+ name: deployment-validator
+webhooks:
+- name: validate-deployment-secrets.apps.v1
+  admissionReviewVersions: ["v1"]
+  clientConfig:
+    service:
+      name: notifications
+      namespace: cert-notificiations
+      path: "/verify-secrets"
+      port: 443
+    caBundle: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJpRENDQVM2Z0F3SUJBZ0lSQVB0QmxHWU5IcnBvY2sxZVo1ZUpHRll3Q2dZSUtvWkl6ajBFQXdJd0FEQWUKRncweU16RXlNamN4T1RJM01ERmFGdzB5TkRBek1qWXhPVEkzTURGYU1BQXdXVEFUQmdjcWhrak9QUUlCQmdncQpoa2pPUFFNQkJ3TkNBQVRrQ0pVMFlKbDZqVkpvbWpKbGVBdUFpODhUbitzSStFSmdaNHl1bEIvR3EyRnVtRVNtClYrOERrVzZWOUU3bUQ1MWZCbDd2V3h0WlVuWXRrc05UUlJ1WG80R0lNSUdGTUE0R0ExVWREd0VCL3dRRUF3SUYKb0RBTUJnTlZIUk1CQWY4RUFqQUFNR1VHQTFVZEVRRUIvd1JiTUZtQ0pXNXZkR2xtYVdOaGRHbHZibk11WTJWeQpkQzF1YjNScFptbGphV0YwYVc5dWN5NXpkbU9DRFc1dmRHbG1hV05oZEdsdmJuT0NJVzV2ZEdsbWFXTmhkR2x2CmJuTXVZMlZ5ZEMxdWIzUnBabWxqYVdGMGFXOXVjekFLQmdncWhrak9QUVFEQWdOSUFEQkZBaUVBK1ZaeC9yNmEKOTV3ckdYbTdTdDZSZUxYQzgrVFlRQWFaR0RUa2VWVEE3RklDSUNoU3lucU4vM083eWNreTJaRnUzb2psUklnWQo3TXdXYnhPQTZwUGt0MmpTCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K"
+  rules:
+    - operations: ["CREATE", "UPDATE"]
+      apiGroups: ["apps"]
+      apiVersions: ["v1"]
+      resources: ["deployments","statefulsets"]
+  failurePolicy: Fail
+  timeoutSeconds: 10
+  sideEffects: None
