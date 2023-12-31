@@ -21,6 +21,15 @@ def check_secret_exists(secret_name, namespace):
         else:
             raise
 
+def check_configmap_exists(secret_name, namespace):
+    try:
+        api_client.read_namespaced_config_map(secret_name, namespace)
+        return True
+    except client.exceptions.ApiException as e:
+        if e.status == 404:
+            return False
+        else:
+            raise
 
 @app.route('/verify-secrets', methods=['POST'])
 def verify_secrets():
@@ -32,17 +41,20 @@ def verify_secrets():
         env_vars = deployment['spec']['template']['spec']['containers'][0]['env']
         secret_refs = [env_var['valueFrom']['secretKeyRef']['name'] for env_var in env_vars if
                        'secretKeyRef' in env_var.get('valueFrom', {})]
+        configmap_refs = [env_var['valueFrom']['configMapKeyRef']['name'] for env_var in env_vars if
+                          'configMapKeyRef' in env_var.get('valueFrom', {})]
 
         # Check if the referenced secrets exist in the Kubernetes cluster
         secrets_exist = all(
             check_secret_exists(secret_ref, deployment['metadata']['namespace']) for secret_ref in secret_refs)
+        configmaps_exist = all(
+            check_configmap_exists(configmap_ref, deployment['metadata']['namespace']) for configmap_ref in configmap_refs)
 
-        # Return the verification result
-        if secrets_exist:
-            # Do something if all secrets exist
+        if secrets_exist or configmaps_exist:
+            # Do something if all secrets and configmaps exist
             return jsonify({"apiVersion": "admission.k8s.io/v1","kind": "AdmissionReview","response": {"uid": request.json['request']['uid'],"allowed": True}}), 200
         else:
-            return jsonify({"status": "failure", "message": "Secret doesnt exists"}), 400
+            return jsonify({"status": "failure", "message": "Secret or ConfigMap doesnt exists"}), 400
     else:
         return jsonify({"apiVersion": "admission.k8s.io/v1", "kind": "AdmissionReview","response": {"uid": request.json['request']['uid'], "allowed": True}}), 200
 
