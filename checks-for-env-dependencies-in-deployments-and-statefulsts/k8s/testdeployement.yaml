@@ -13,10 +13,6 @@ spec:
       labels:
         app: notifications
     spec:
-      imagePullSecrets:
-      - name: acr-secret
-      nodeSelector:
-        agentpool: systemdemo
       containers:
         - name: nginx
           image: nginx:latest
