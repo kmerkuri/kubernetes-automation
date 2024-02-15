@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-monitoring-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flask-monitoring-app
+  template:
+    metadata:
+      labels:
+        app: flask-monitoring-app
+    spec:
+      serviceAccountName: teams-robot
+      containers:
+        - name: flask-monitoring-app
+          image: image:tag
+          ports:
+            - name: http
+              containerPort: 5000
+          env:
+            - name: CLUSTER_NAME
+              value: "<cluster name>"
+            - name: TEAMS_WEBHOOK_URL
+              value: "<teams webhook url>"
